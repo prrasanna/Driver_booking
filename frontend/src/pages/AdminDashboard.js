@@ -6,6 +6,7 @@ export default function AdminDashboard() {
   const { token } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
   const [drivers, setDrivers] = useState([]);
+  const[selectedDrivers, setSelectedDrivers] = useState({});
 
   useEffect(() => {
     fetchData();
@@ -19,14 +20,21 @@ export default function AdminDashboard() {
       headers: { Authorization: `Bearer ${token}` }
     });
     setBookings(bookingRes.data);
-    setDrivers(driverRes.data.filter(d => d.status === 'available'));
+    setDrivers(driverRes.data);
   };
 
-  const assignDriver = async (bookingId, driverId) => {
+  const handleDriverSelect = (bookingId, driverId) => {
+    setSelectedDrivers(prev => ({ ...prev, [bookingId]: driverId }));
+  };
+
+  const assignDriver = async (bookingId) => {
+    const driverId = selectedDrivers[bookingId];
+    if (!driverId) return alert("Please select a driver");
+
     await axios.put(`http://localhost:5000/api/bookings/${bookingId}/assign`, { driverId }, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    fetchData(); // refresh after assignment
+    fetchData();
   };
 
   return (
@@ -36,15 +44,25 @@ export default function AdminDashboard() {
         {bookings.map(booking => (
           <li key={booking._id}>
             {booking.pickupLocation} → {booking.dropLocation} @ {new Date(booking.datetime).toLocaleString()} — Status: {booking.status}
+            
             {booking.status === 'pending' && (
-              <select onChange={e => assignDriver(booking._id, e.target.value)}>
-                <option>Assign Driver</option>
-                {drivers.map(driver => (
-                  <option key={driver._id} value={driver._id}>
-                    {driver.name} ({driver.phone})
-                  </option>
-                ))}
-              </select>
+              <>
+                <select
+                  value={selectedDrivers[booking._id] || ''}
+                  onChange={e => handleDriverSelect(booking._id, e.target.value)}
+                >
+                  <option value="">Select Driver</option>
+                  {drivers.map(driver => (
+                    <option key={driver._id} value={driver._id}>
+                      {driver.name} ({driver.phone})
+                    </option>
+                  ))}
+                </select>
+                
+                {selectedDrivers[booking._id] && (
+                  <button onClick={() => assignDriver(booking._id)}>Assign</button>
+                )}
+              </>
             )}
           </li>
         ))}
