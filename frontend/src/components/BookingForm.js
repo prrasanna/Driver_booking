@@ -1,25 +1,57 @@
-import React, { useState, useContext } from 'react';
-import { createBooking, getBookings } from '../api/api';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState, useContext } from "react";
+import { createBooking } from "../api/api";
+import { AuthContext } from "../context/AuthContext";
+import { Form, Button } from "react-bootstrap";
 
 export default function BookingForm({ refresh }) {
-  const [pickup, setPickup] = useState('');
-  const [drop, setDrop] = useState('');
-  const [datetime, setDatetime] = useState('');
+  const [pickup, setPickup] = useState("");
+  const [drop, setDrop] = useState("");
+  const [datetime, setDatetime] = useState("");
   const { token } = useContext(AuthContext);
 
-  const submit = async e => {
+  const submit = async (e) => {
     e.preventDefault();
     await createBooking(token, { pickupLocation: pickup, dropLocation: drop, datetime });
     refresh();
   };
 
   return (
-    <form onSubmit={submit}>
-      <input placeholder="Pickup" value={pickup} onChange={e=>setPickup(e.target.value)} />
-      <input placeholder="Drop" value={drop} onChange={e=>setDrop(e.target.value)} />
-      <input type="datetime-local" value={datetime} onChange={e=>setDatetime(e.target.value)} />
-      <button type="submit">Book Driver</button>
-    </form>
+    <Form onSubmit={submit}>
+      <Form.Group className="mb-3">
+        <Form.Label>Pickup Location</Form.Label>
+        <Form.Control
+          type="text"
+          placeholder="Enter pickup location"
+          value={pickup}
+          onChange={(e) => setPickup(e.target.value)}
+          required
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Drop Location</Form.Label>
+        <Form.Control
+          type="text"
+          placeholder="Enter drop location"
+          value={drop}
+          onChange={(e) => setDrop(e.target.value)}
+          required
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Date & Time</Form.Label>
+        <Form.Control
+          type="datetime-local"
+          value={datetime}
+          onChange={(e) => setDatetime(e.target.value)}
+          required
+        />
+      </Form.Group>
+
+      <Button type="submit" variant="success" className="w-100 rounded-pill">
+        Book Driver
+      </Button>
+    </Form>
   );
 }

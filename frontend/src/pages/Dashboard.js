@@ -3,27 +3,36 @@ import { AuthContext } from "../context/AuthContext";
 import BookingForm from "../components/BookingForm";
 import BookingList from "../components/BookingList";
 import { useNavigate } from "react-router-dom";
+import { Card } from "react-bootstrap";
+import DashboardLayout from "../components/DashboardLayout";
+
 export default function Dashboard() {
-    const navigate=useNavigate();
-  const { role, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { role } = useContext(AuthContext);
+
   useEffect(() => {
-    if (role === "admin") {
-      navigate("/admin");
-    }
-  }, [role]);
+    if (role === "admin") navigate("/admin");
+  }, [role, navigate]);
+
   return (
-    <div className="dashboard">
-      <h2>Dashboard - {role.toUpperCase()}</h2>
+    <DashboardLayout role={role}>
+      <Card className="shadow-lg border-0 rounded-4 mb-4">
+        <Card.Body>
+          {role === "customer" && (
+            <>
+              <h5 className="mb-3">Book a Driver</h5>
+              <BookingForm refresh={() => window.location.reload()} />
+            </>
+          )}
+        </Card.Body>
+      </Card>
 
-      {role === "customer" && (
-        <>
-          <BookingForm refresh={() => window.location.reload()} />
-        </>
-      )}
-
-      <BookingList />
-
-      <button onClick={logout}>Logout</button>
-    </div>
+      <Card className="shadow-lg border-0 rounded-4">
+        <Card.Body>
+          <h5 className="mb-3">Your Bookings</h5>
+          <BookingList />
+        </Card.Body>
+      </Card>
+    </DashboardLayout>
   );
 }
